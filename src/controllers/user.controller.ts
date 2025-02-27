@@ -261,7 +261,7 @@ export class UserController {
 
         await this.userRepository.save(user);
 
-        res.status(200).json({ success: true, message: "Status do usuário atualizado com sucesso." });
+        res.status(200).json({ message: "Status do usuário atualizado com sucesso." });
     } catch (error) {
         next(error);
     }
