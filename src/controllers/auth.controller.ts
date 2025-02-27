@@ -31,10 +31,10 @@ export class AuthController {
       }
       const user = await this.userRepository.findOneBy({ email });
       if (!user) {
-      throw new AppError('usuario não encontrado',401)}
+      throw new AppError('usuario não encontrado.',401)}
       const validPassword = await bcrypt.compare(password, user?.password_hash);
       if (!validPassword) {
-        throw new AppError("email ou senha invalida", 401);
+        throw new AppError("email ou senha invalida.", 401);
       }
       const payload = { id: user?.id, profile: user?.profile };
       const secret = process.env.JWT_SECRET || "secret";
