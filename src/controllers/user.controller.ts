@@ -155,5 +155,95 @@ export class UserController {
     } catch (err) {
         next(err);
     }
-};
+  };
+
+  updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+
+        const forbiddenFields = ["id", "created_at", "updated_at", "profile", "document"];
+        const isInvalidUpdate = forbiddenFields.some(field => field in body) || 
+                                typeof body.status === "boolean";
+
+        if (isInvalidUpdate) {
+            return next(new AppError("Estas informações não podem ser atualizadas.", 403));
+        }
+
+        const token = req.headers.authorization?.split(" ")[1] || "";
+
+        if (!token) {
+            return next(new AppError("Token de autenticação ausente.", 401));
+        }
+
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET || "") as { id: string };
+        } catch {
+            return next(new AppError("Token inválido ou expirado.", 403));
+        }
+
+        const userId = Number(decodedToken.id);
+        const userLogged = await this.userRepository.findOne({ where: { id: userId } });
+
+        if (!userLogged) {
+            return next(new AppError("Usuário autenticado não encontrado.", 404));
+        }
+
+        if (userLogged.profile === "DRIVER" && Number(id) !== userId) {
+            return next(new AppError("Acesso negado.", 403));
+        }
+
+        if (userLogged.profile === "BRANCH") {
+            return next(new AppError("Acesso negado.", 403));
+        }
+
+        const user = await this.userRepository.findOne({ where: { id: Number(id) } });
+
+        if (!user) {
+            return next(new AppError("Usuário não encontrado.", 404));
+        }
+        
+        if(body.name) {
+          user.name = body.name
+        }
+
+        if(body.email) {
+          user.email = body.email
+        }
+
+        if(body.password) {
+          const salt = Number(process.env.SALT_BCRYPT);
+          const password_cripto = bcrypt.hashSync(body.password, salt);
+          user.password_hash = password_cripto
+        }
+
+        await this.userRepository.save(user);
+
+        const userUpdated = {
+            id: user.id,
+            name: user.name,
+            profile: user.profile,
+            status: user.status,
+        };
+
+        let additionalData = null;
+
+        if (user.profile === "DRIVER") {
+            if (body.full_address) {
+                await this.driverRepository.update({ user_id: user.id }, { full_address: body.full_address });
+            }
+            additionalData = await this.driverRepository.findOne({ where: { user_id: user.id } });
+        } else if (user.profile === "BRANCH") {
+            if (body.full_address) {
+                await this.branchRepository.update({ user_id: user.id }, { full_address: body.full_address });
+            }
+            additionalData = await this.branchRepository.findOne({ where: { user_id: user.id } });
+        }
+
+        res.status(200).json(user.profile === "ADMIN" ? user : { ...userUpdated, additionalData });
+    } catch (error) {
+        next(error);
+    }
+  };
 }
