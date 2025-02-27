@@ -51,3 +51,8 @@
 [27-02-2025 10:25:35.198 AM] info: 	O servidor está rodando em http://localhost:3000
 [27-02-2025 10:25:40.209 AM] info: 	O servidor está rodando em http://localhost:3000
 [27-02-2025 10:25:42.006 AM] info: 	O servidor está rodando em http://localhost:3000
+[27-02-2025 10:25:45.224 AM] info: 	O servidor está rodando em http://localhost:3000
+[27-02-2025 10:26:12.861 AM] error: 	o valor nulo na coluna "full_address" da relação "drivers" viola a restrição de não-nulo
+[27-02-2025 10:31:42.277 AM] error: 	o valor nulo na coluna "full_address" da relação "drivers" viola a restrição de não-nulo
+[27-02-2025 10:32:44.150 AM] error: 	o valor nulo na coluna "full_address" da relação "drivers" viola a restrição de não-nulo
+[27-02-2025 10:33:53.797 AM] error: 	o valor nulo na coluna "document" da relação "drivers" viola a restrição de não-nulo
