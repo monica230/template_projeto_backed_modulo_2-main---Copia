@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { Driver } from "../entities/Driver";
 import { Branch } from "../entities/Branch";
 import { EnumProfile } from "../entities/User";
+import jwt from "jsonwebtoken"
 
 export class UserController {
   private userRepository;
@@ -94,4 +95,65 @@ export class UserController {
           next(err);
       }
   };
+
+  listById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const token = req.headers.authorization?.split(" ")[1] || "";
+
+        if (!token) {
+            return next(new AppError("Token não fornecido.", 403));
+        }
+
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET || "") as { id: string };
+        } catch {
+            return next(new AppError("Token inválido ou expirado.", 403));
+        }
+
+        const userId = Number(decodedToken.id);
+
+        const userLogged = await this.userRepository.findOne({ where: { id: userId } });
+
+        if (!userLogged) {
+            return next(new AppError("Usuário autenticado não encontrado.", 404));
+        }
+
+        if (userLogged.profile === "DRIVER" && Number(id) !== userId) {
+            return next(new AppError("Acesso negado.", 403));
+        }
+
+        if (userLogged.profile === "BRANCH") {
+            return next(new AppError("Acesso negado.", 403));
+        }
+
+        const user = await this.userRepository.findOne({
+            select: ["id", "name", "profile", "status"],
+            where: { id: Number(id) },
+        });
+
+        if (!user) {
+            return next(new AppError("Usuário não encontrado.", 404));
+        }
+
+        let extraData = null;
+
+        if (user.profile === "DRIVER") {
+            extraData = await this.driverRepository.findOne({
+                where: { user_id: user.id },
+                select: ["full_address"],
+            });
+        } else if (user.profile === "BRANCH") {
+            extraData = await this.branchRepository.findOne({
+                where: { user_id: user.id },
+                select: ["full_address"],
+            });
+        }
+
+        res.status(200).json({ ...user, extraData });
+    } catch (err) {
+        next(err);
+    }
+};
 }
