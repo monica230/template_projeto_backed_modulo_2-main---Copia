@@ -8,5 +8,7 @@ userRouter.post('/',verifyAdmin, userController.createUser)
 userRouter.get('/',verifyAdmin, userController.listAllUsers)
 userRouter.get('/:id', userController.listById)
 userRouter.put('/:id', userController.updateUser)
+userRouter.patch('/:id/status', userController.updateStatus)
+
 
 export default userRouter;
