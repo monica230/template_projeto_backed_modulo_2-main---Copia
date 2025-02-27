@@ -5,6 +5,7 @@ import AppError from "../utils/AppError";
 import bcrypt from "bcrypt";
 import { Driver } from "../entities/Driver";
 import { Branch } from "../entities/Branch";
+import { EnumProfile } from "../entities/User";
 
 export class UserController {
   private userRepository;
@@ -14,7 +15,7 @@ export class UserController {
   constructor() {
     this.userRepository = AppDataSource.getRepository(User);
     this.driverRepository = AppDataSource.getRepository(Driver);
-    this.branchRepository = AppDataSource.getRepository(Branch)
+    this.branchRepository = AppDataSource.getRepository(Branch);
   }
   createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -73,5 +74,24 @@ export class UserController {
     } catch (error) {
       next(error);
     }
+  };
+
+  listAllUsers = async (req: Request, res: Response, next: NextFunction)=> {
+      try {
+          const { profile } = req.query as { profile?: string };
+  
+          const users = await this.userRepository.find({
+              select: ["id", "name", "profile", "status"],
+              where: { profile: profile as EnumProfile },
+          });
+  
+          if (!users.length) {
+              return next(new AppError("Nenhum usuário encontrado.", 404));
+          }
+  
+          res.status(200).json({ success: true, data: users });
+      } catch (err) {
+          next(err);
+      }
   };
 }
