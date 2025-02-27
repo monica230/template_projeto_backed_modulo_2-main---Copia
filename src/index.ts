@@ -12,6 +12,8 @@ import { handleError } from "./middlewares/handleError";
 
 import authRouter from "./routes/auth.routes";
 import logger from "./config/winston";
+import { verify } from "crypto";
+import verifyToken from "./middlewares/auth";
 
 const app = express();
 
@@ -19,7 +21,7 @@ app.use(cors()); // Permite que o express entenda requisições de outros domín
 
 app.use(express.json()); // Permite que o express entenda JSON
 
-app.use("/users", userRouter);
+app.use("/users",verifyToken as express.RequestHandler, userRouter);
 app.use("/login", authRouter);
 
 app.get("/env", (req, res) => {
