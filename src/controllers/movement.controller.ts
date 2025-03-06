@@ -80,5 +80,17 @@ export class MovementController {
             next(error);
         }
     };
+
+    listAllMovements = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const movements = await this.movementRepository.find({ relations: ["product", "branch"] });
+    
+            res.status(200).json({
+                movements,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
     
 }
