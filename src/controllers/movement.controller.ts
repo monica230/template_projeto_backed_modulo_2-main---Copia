@@ -6,6 +6,7 @@ import { Branch } from "../entities/Branch"
 import { Product } from "../entities/Product"
 import { DeepPartial } from "typeorm"
 import { User } from "../entities/User"
+import jwt from "jsonwebtoken"
 
 export class MovementController {
     private movementRepository 
@@ -134,5 +135,83 @@ export class MovementController {
         } catch (error) {
             next(error);
         }
-    }  
+    }
+    
+    endMovement = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { id } = req.params;
+            const token = req.headers.authorization?.split(' ')[1];
+    
+            if (!token) {
+                return next(new AppError("Token não fornecido.", 401));
+            }
+    
+            let decoded;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string; profile: string };
+            } catch {
+                return next(new AppError("Token inválido ou expirado.", 403));
+            }
+    
+            if (decoded.profile !== "DRIVER") {
+                return next(new AppError("Acesso negado. Apenas motoristas podem finalizar a movimentação.", 403));
+            }
+    
+            const movement = await this.movementRepository.findOne({
+                where: { id: Number(id), driver_id: Number(decoded.id) },
+            });
+    
+            if (!movement) {
+                return next(new AppError("Movimentação não encontrada ou não pertence ao motorista autenticado.", 404));
+            }
+    
+            const destinationBranch = await this.branchRepository.findOne({
+                where: { id: movement.destination_branch_id },
+                relations: ["user"],
+            });
+    
+            if (!destinationBranch) {
+                return next(new AppError("Filial de destino não encontrada.", 404));
+            }
+    
+            // Atualiza status da movimentação para "FINISHED"
+            movement.status = "FINISHED" as movementStatusEnum;
+            await this.movementRepository.save(movement);
+    
+            // Obtém informações do produto movimentado
+            const originalProduct = await this.productRepository.findOne({
+                where: { id: movement.product_id },
+            });
+    
+            if (!originalProduct) {
+                return next(new AppError("Produto original não encontrado.", 404));
+            }
+    
+            // Verifica se o produto já existe na filial de destino
+            let destinationProduct = await this.productRepository.findOne({
+                where: { name: originalProduct.name, branch_id: movement.destination_branch_id },
+            });
+    
+            if (destinationProduct) {
+                destinationProduct.amount += movement.quantity;
+            } else {
+                destinationProduct = this.productRepository.create({
+                    name: originalProduct.name,
+                    branch_id: movement.destination_branch_id,
+                    description: originalProduct.description,
+                    amount: movement.quantity,
+                });
+            }
+    
+            await this.productRepository.save(destinationProduct);
+    
+            res.status(200).json({
+                message: "Movimentação finalizada com sucesso!",
+                movement,
+                product: destinationProduct,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
