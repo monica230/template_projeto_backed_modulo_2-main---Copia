@@ -1,19 +1,23 @@
 import { NextFunction, Request, Response } from "express"
 import { AppDataSource } from "../data-source"
-import { Movement } from "../entities/Movements"
+import { Movement, movementStatusEnum } from "../entities/Movements"
 import AppError from "../utils/AppError"
 import { Branch } from "../entities/Branch"
 import { Product } from "../entities/Product"
+import { DeepPartial } from "typeorm"
+import { User } from "../entities/User"
 
 export class MovementController {
     private movementRepository 
     private branchRepository
     private productRepository
+    private userRepository
 
     constructor() {
         this.movementRepository = AppDataSource.getRepository(Movement)
         this.branchRepository = AppDataSource.getRepository(Branch)
         this.productRepository = AppDataSource.getRepository(Product)
+        this.userRepository = AppDataSource.getRepository(User)
     }
 
     createMovement = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -92,5 +96,43 @@ export class MovementController {
             next(error);
         }
     }
+
+    startMovement = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { id } = req.params;
+            const { driver_id } = req.body;
     
+            const movement = await this.movementRepository.findOne({ where: { id: Number(id) } });
+    
+            if (!movement) {
+                return next(new AppError("Movimentação não encontrada.", 404));
+            }
+    
+            // Atualiza o status da movimentação para "IN_PROGRESS"
+            movement.status = "IN_PROGRESS" as DeepPartial<movementStatusEnum>;
+            movement.driver_id = driver_id;
+    
+            await this.movementRepository.save(movement);
+    
+            // Obtém informações adicionais da filial e do motorista
+            const destinationBranch = await this.branchRepository.findOne({
+                where: { id: movement.destination_branch_id },
+                relations: ["user"],
+            });
+    
+            const driver = await this.userRepository.findOne({
+                where: { id: driver_id },
+                relations: ["driver"],
+            });
+    
+            res.status(200).json({
+                message: "Movimentação iniciada com sucesso.",
+                movement,
+                destinationBranch,
+                driver,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }  
 }
