@@ -10,5 +10,6 @@ const movementController = new MovementController();
 movementRouter.post("/", verifyBranch, movementController.createMovement);
 movementRouter.get("/", verifyBranch, movementController.listAllMovements);
 movementRouter.patch("/:id/start", verifyDriver, movementController.startMovement);
+movementRouter.patch("/:id/end", movementController.endMovement);
 
 export default movementRouter;
