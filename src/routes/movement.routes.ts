@@ -7,5 +7,6 @@ const movementRouter = Router();
 const movementController = new MovementController();
 
 movementRouter.post("/", verifyBranch, movementController.createMovement);
+movementRouter.get("/", verifyBranch, movementController.listAllMovements);
 
 export default movementRouter;
