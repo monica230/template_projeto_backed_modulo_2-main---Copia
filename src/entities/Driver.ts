@@ -1,5 +1,6 @@
-import { Column, Entity,OneToOne,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,JoinColumn} from "typeorm";
+import { Column, Entity,OneToOne,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,JoinColumn, OneToMany} from "typeorm";
 import { User } from "./User";
+import { Movement } from "./Movements";
 
 @Entity("drivers")
 export class Driver{
@@ -18,6 +19,9 @@ export class Driver{
         @OneToOne(() => User, user => user.branch)
         @JoinColumn({ name: 'user_id' })
         user: User
+
+        @OneToMany(() => Movement, movement => movement.driver)
+        movements: Movement[]
     
         @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
         created_at: Date
