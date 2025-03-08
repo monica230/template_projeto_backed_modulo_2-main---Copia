@@ -61,32 +61,32 @@ Este backend vai fornecer uma API Restful com as seguintes funcionalidades princ
 - Endpoint: `/movements`
 - Exibe as movimentações realizadas, com detalhes do produto e filial de destino.
 
- Requisito 7 - Cadastro de Produto
+7 - Cadastro de Produto
 Método: POST
 Path: /products
 Acesso: Privada, acessível somente por FILIAL
 
-Requisito 8 - Listagem de Produtos
+8 - Listagem de Produtos
 Método: GET
 Path: /products
 Acesso: Privado, acessível somente por FILIAL
 
-- Requisito 9 - Cadastro de Movimentação (FILIAL)
+9 - Cadastro de Movimentação (FILIAL)
 Método: POST
 Path: /movements/
 Acesso: Privado, acessível somente por FILIAL
 
-Requisito 10 - Listagem de Movimentações
+10 - Listagem de Movimentações
 Método: GET
 Path: /movements
 Acesso: Privada, acessível somente por FILIAL E MOTORISTA
 
-Requisito 11 - Atualizar Status para "IN_PROGRESS" (MOTORISTA)
+11 - Atualizar Status para "IN_PROGRESS" (MOTORISTA)
 Método: PATCH
 Path: /movements/:id/start
 Acesso: Privada, acessível somente por MOTORISTA
 
-Requisito 12 - Atualizar Status para "FINISHED" (MOTORISTA)
+12 - Atualizar Status para "FINISHED" (MOTORISTA)
 Método: PATCH
 Path: /movements/:id/end
 Acesso: Privada, acessível somente por MOTORISTA que iniciou a viagem
