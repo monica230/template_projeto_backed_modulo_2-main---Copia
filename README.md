@@ -1,6 +1,6 @@
-# DEVinHouse [Clamed] V3 - Backend
+--DEVinHouse [Clamed] V3 - Backend--
 
-## Descrição
+-- Descrição
 
  O objetivo do projeto é desenvolver o backend de um sistema que permitirá gerenciar usuários, produtos e movimentações de estoque entre as filiais de uma rede de farmácias chamada **FARMA_DEVIN**.
 
@@ -18,7 +18,7 @@ Este backend vai fornecer uma API Restful com as seguintes funcionalidades princ
 
 ---
 
-## Tecnologias Utilizadas
+-- Tecnologias Utilizadas
 
 - **Node.js**: Ambiente de execução JavaScript no servidor.
 - **TypeScript**: Superconjunto do JavaScript, oferece tipagem estática e recursos modernos.
@@ -28,38 +28,68 @@ Este backend vai fornecer uma API Restful com as seguintes funcionalidades princ
 
 ---
 
-## Funcionalidades
+ --Funcionalidades
 
-### 1. Cadastro de Usuários
+ 1- Cadastro de Usuários
 - Método: `POST`
 - Endpoint: `/users`
 - Requisitos: O perfil de usuário pode ser `DRIVER`, `BRANCH` ou `ADMIN`.
 - Validações e criação de hash para a senha.
 
-### 2. Login de Usuários
+ 2- Login de Usuários
 - Método: `POST`
 - Endpoint: `/login`
 - Retorna um token JWT, nome e perfil do usuário.
 
-### 3. Listagem de Usuários
+3- Listagem de Usuários
 - Método: `GET`
 - Endpoint: `/users`
 - Permite listar todos os usuários, com filtros por perfil (opcional).
 
-### 4. Cadastro de Produtos
+4- Cadastro de Produtos
 - Método: `POST`
 - Endpoint: `/products`
 - Permite que filiais cadastrem produtos.
 
-### 5. Movimentação de Produtos
+ 5- Movimentação de Produtos
 - Método: `POST`
 - Endpoint: `/movements`
 - Permite movimentação de produtos entre filiais, com validação de estoque.
 
-### 6. Listagem de Movimentações
+6 - Listagem de Movimentações
 - Método: `GET`
 - Endpoint: `/movements`
 - Exibe as movimentações realizadas, com detalhes do produto e filial de destino.
+
+ Requisito 7 - Cadastro de Produto
+Método: POST
+Path: /products
+Acesso: Privada, acessível somente por FILIAL
+
+Requisito 8 - Listagem de Produtos
+Método: GET
+Path: /products
+Acesso: Privado, acessível somente por FILIAL
+
+- Requisito 9 - Cadastro de Movimentação (FILIAL)
+Método: POST
+Path: /movements/
+Acesso: Privado, acessível somente por FILIAL
+
+Requisito 10 - Listagem de Movimentações
+Método: GET
+Path: /movements
+Acesso: Privada, acessível somente por FILIAL E MOTORISTA
+
+Requisito 11 - Atualizar Status para "IN_PROGRESS" (MOTORISTA)
+Método: PATCH
+Path: /movements/:id/start
+Acesso: Privada, acessível somente por MOTORISTA
+
+Requisito 12 - Atualizar Status para "FINISHED" (MOTORISTA)
+Método: PATCH
+Path: /movements/:id/end
+Acesso: Privada, acessível somente por MOTORISTA que iniciou a viagem
 
 ---
 
